@@ -11,26 +11,23 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Client {
-    
+public class Client { //https://webchat.freenode.net/ for testing
+
     Scanner readme = new Scanner(System.in);
     String line = null;
     Socket socket = null;
     BufferedWriter writer = null;
     BufferedReader reader = null;
-    String channel = "#programming";
+    String channel = "#test";
 
     public void Power_on() throws IOException {
 
-        
         boolean run = true;
 
         String server = "irc.freenode.net";
-        String nick = "mifasyrazjabays";
-        String login = "mifasyrazjabays";
-        //String pass = "mifzjbys";
-
-        
+        String nick = "MatasjEGA";
+        String login = "MatasjEGA";
+        String pass = "mifzjbys";
 
         socket = new Socket(server, 6667);
         writer = new BufferedWriter(
@@ -40,86 +37,158 @@ public class Client {
 
         PingPong pongIt = new PingPong();
 
-       // writer.write("PASS " + pass + "\r\n");
-        writer.write("NICK " + nick + "\r\n");
-        writer.write("USER " + login + " 8 * : Java IRC Hacks Bot\r\n");
+        writer.write("PASS " + pass + "\r\n");
         writer.flush();
-        
-        
+        writer.write("NICK " + nick + "\r\n");
+        writer.flush();
+        writer.write("USER " + login + " 8 * : Hello\r\n");
+        writer.flush();
+        if ((line = reader.readLine()) == "ERR_ALREADYREGISTRED") {
+            System.out.print("Toks nick'as jau yra");
+        }
 
-       
         while ((line = reader.readLine()) != null) {
             System.out.println(line);
 
-            if (line.indexOf("004") >= 0) {
-
+            if (line.contains("001") || line.contains("002") || line.contains("003") || line.contains("004")) {
+                System.out.println("PRISIJUNGETE SEKMINGAI");
                 break;
-            } else if (line.indexOf("433") >= 0) {
-                System.out.println("Nickname is already in use.");
+            }
+            if (line.contains("433") || line.contains("462")) {
+                System.out.println("TOKS NICK JAU YRA");
                 return;
             }
         }
 
         writer.write("JOIN " + channel + "\r\n");
         writer.flush();
-        
-        //writer.write("PRIVMSG " + channel + " :I got pinged!\r\n");
-        
+
         pongIt.start();
 
         while (true) {
-            
-            
-        
+
             System.out.println("1. Siusti zinute");
-            
-            switch(readme.nextInt())
-            {
-                case 1:
-                    SendThis();
+            System.out.println("2. Iseiti");
+            System.out.println("3. Kanalo topic'as");
+            System.out.println("4. Sarasas zmoniu ir kanbalu prieinamu vartotojui");
+            System.out.println("5. Pakviesti vartotoja ir kanala");
+            System.out.println("6. Ismesti vartotoja");
+            System.out.println("7. Dienos zinute");
+            System.out.println("8. Kanalo statistika");
+            System.out.println("9. Serverio versija");
+            System.out.println("10. Serverio laikas");
+
+            switch (readme.nextLine()) {
+                case "1":
+                    System.out.print("Tavo zinute: ");
+                    String message = readme.nextLine();
+                    SendThis(message);
                     break;
+                case "2":
+                    writer.flush();
+                    writer.write("QUIT : Bye bye everyone \r\n");
+                    writer.flush();
+                    return;
+
+                case "3":
+                    writer.flush();
+                    writer.write("TOPIC " + channel + "\r\n");
+                    writer.flush();
+                    break;
+                case "4":
+                    writer.flush();
+                    writer.write("NAMES\r\n");
+                    writer.flush();
+                    break;
+                case "5":
+                    Invite();
+                    break;
+                case "6":
+                    Kick();
+                    break;
+                case "7":
+                    writer.flush();
+                    writer.write("MOTD \r\n");
+                    writer.flush();
+                    break;
+                case "8":
+                    writer.flush();
+                    writer.write("LUSERS\r\n");
+                    writer.flush();
+                    break;
+                case "9":
+                    writer.flush();
+                    writer.write("VERSION\r\n");
+                    writer.flush();
+                    break;
+                case "10":
+                    writer.flush();
+                    writer.write("TIME\r\n");
+                    writer.flush();
+                    break;
+
+                default:
+                    System.out.println("Blogas inputas");
             }
-            
         }
     }
-    
-    public void SendThis() throws IOException
-    {
-        String hate = "PRIVMSG " + channel + " :PRIVMSG, but that is a public msg." + "\r\n";
-        
-        writer.write("sadasdasd");
+
+    public void SendThis(String message) throws IOException {
+        String send = "PRIVMSG " + channel + " :" + message + "\r\n";
+        writer.flush();
+        writer.write(send);
+        writer.flush();
     }
+
+    public void Kick() throws IOException {
+        String nick;
+        System.out.print("Kuri vartotoja norite is'kick'inti: ");
+        nick = readme.next();
+        writer.flush();
+        writer.write("KICK " + channel + " " + nick + "\r\n");    
+        writer.flush();
+    }
+
+    public void Invite() throws IOException {
+        String nick;
+        System.out.println("Iveskite nick");
+        nick = readme.next();
+        writer.flush();
+        writer.write("INVITE " + nick + " " + channel + "\r\n"); 
+        writer.flush();
+    }
+
     public class PingPong implements Runnable {
- 
+
         private String threadName = "PongThread";
         private Thread t;
- 
-        public void start (){
-            if(t == null){
-                t = new Thread (this, threadName);
+
+        public void start() {
+            if (t == null) {
+                t = new Thread(this, threadName);
                 t.start();
             }
         }
 
         public void run() {
             System.out.println("HERE");
-            
+
             try {
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
-                    if(line.startsWith("PING ")){
+                    if (line.startsWith("PING ")) {
+                        writer.flush();
                         writer.write("PONG");
                         writer.flush();
-                        
-                        
+
                         System.out.println("Ponged it");
                     }
-                    
+
                 }
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
-   
+
         }
     }
 }
