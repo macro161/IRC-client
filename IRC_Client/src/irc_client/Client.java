@@ -88,24 +88,12 @@ public class Client {
         String hate = "PRIVMSG #" + channel + " :PRIVMSG, but that is a public msg." + "\r\n";
         
         writer.write("PRIVMSG " + channel + " :I got pinged!\r\n");
-        
-        //String sendThis = readme.nextLine();
-        
-        
-        
     }
-    
-    
-    
-
     public class PingPong implements Runnable {
-
-        
+ 
         private String threadName = "PongThread";
         private Thread t;
-
-       
-        
+ 
         public void start (){
             if(t == null){
                 t = new Thread (this, threadName);
@@ -131,9 +119,7 @@ public class Client {
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
-           
-                
-            
+   
         }
     }
 }
