@@ -85,9 +85,9 @@ public class Client {
     
     public void SendThis() throws IOException
     {
-        String hate = "PRIVMSG #" + channel + " :PRIVMSG, but that is a public msg." + "\r\n";
+        String hate = "PRIVMSG " + channel + " :PRIVMSG, but that is a public msg." + "\r\n";
         
-        writer.write("PRIVMSG " + channel + " :I got pinged!\r\n");
+        writer.write("sadasdasd");
     }
     public class PingPong implements Runnable {
  
