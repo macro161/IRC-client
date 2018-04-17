@@ -17,25 +17,32 @@ public class Client { //https://webchat.freenode.net/ for testing
     String line = null;
     Socket socket = null;
     BufferedWriter writer = null;
+    
     BufferedReader reader = null;
-    String channel = "#test";
+    String channel = "#testers";
 
     public void Power_on() throws IOException {
 
         boolean run = true;
 
-        String server = "irc.freenode.net";
-        String nick = "MatasjEGA";
-        String login = "MatasjEGA";
-        String pass = "mifzjbys";
+        String server = "shell.riftus.lt";
+        String nick = "Matas";
+        String login = "Matas";
+        String pass = "mifzjbyd";
 
         socket = new Socket(server, 6667);
         writer = new BufferedWriter(
                 new OutputStreamWriter(socket.getOutputStream()));
+        
+        PingPong pongIt = new PingPong();
+        pongIt.start();
+        
         reader = new BufferedReader(
                 new InputStreamReader(socket.getInputStream()));
+        
+        
 
-        PingPong pongIt = new PingPong();
+        
 
         writer.write("PASS " + pass + "\r\n");
         writer.flush();
@@ -63,7 +70,7 @@ public class Client { //https://webchat.freenode.net/ for testing
         writer.write("JOIN " + channel + "\r\n");
         writer.flush();
 
-        pongIt.start();
+        
 
         while (true) {
 
@@ -82,7 +89,9 @@ public class Client { //https://webchat.freenode.net/ for testing
                 case "1":
                     System.out.print("Tavo zinute: ");
                     String message = readme.nextLine();
+                    writer.flush();
                     SendThis(message);
+                    writer.flush();
                     break;
                 case "2":
                     writer.flush();
@@ -135,7 +144,9 @@ public class Client { //https://webchat.freenode.net/ for testing
 
     public void SendThis(String message) throws IOException {
         String send = "PRIVMSG " + channel + " :" + message + "\r\n";
+        writer.write("");
         writer.flush();
+        
         writer.write(send);
         writer.flush();
     }
@@ -156,6 +167,12 @@ public class Client { //https://webchat.freenode.net/ for testing
         writer.flush();
         writer.write("INVITE " + nick + " " + channel + "\r\n"); 
         writer.flush();
+    }
+    
+    public void JoinChannel()
+    {
+    
+    
     }
 
     public class PingPong implements Runnable {
@@ -178,7 +195,9 @@ public class Client { //https://webchat.freenode.net/ for testing
                     System.out.println(line);
                     if (line.startsWith("PING ")) {
                         writer.flush();
-                        writer.write("PONG");
+                        line = line.replaceAll("[^0-9]", "");
+                        System.out.println("PONG :"+line+"\r\n");
+                        writer.write("PONG :"+line+"\r\n");
                         writer.flush();
 
                         System.out.println("Ponged it");
